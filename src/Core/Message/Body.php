@@ -84,21 +84,21 @@ class Body
      */
     public function getMessage($option = 2)
     {
-        $html = $this->getHtml();
+        $html = $this->getHtmlMessage();
         if(!$html) {
-            return $this->getPlain();
+            return $this->getPlainMessage();
         }
         return $html;
     }
 
     /**
-     * Get Message.
+     * Get Plain Message.
      *
      * @param int $option
      *
      * @return string
      */
-    public function getPlain($option = 2)
+    public function getPlainMessage($option = 2)
     {
         if (!empty($this->plain)) {
             return $this->plain;
@@ -131,13 +131,13 @@ class Body
     }
 
     /**
-     * Get Message.
+     * Get Html Message.
      *
      * @param int $option
      *
      * @return string
      */
-    public function getHtml($option = 2)
+    public function getHtmlMessage($option = 2)
     {
         if (!empty($this->html)) {
             return $this->html;
