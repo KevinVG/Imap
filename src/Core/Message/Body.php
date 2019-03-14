@@ -40,6 +40,16 @@ class Body
     protected $message = '';
 
     /**
+     * @var string
+     */
+    protected $html = '';
+
+    /**
+     * @var string
+     */
+    protected $plain = '';
+
+    /**
      * Class Constructor.
      *
      * @param Connection $connection
@@ -74,30 +84,89 @@ class Body
      */
     public function getMessage($option = 2)
     {
-        if (!empty($this->message)) {
-            return $this->message;
+        $html = $this->getHtml();
+        if(!$html) {
+            return $this->getPlain();
         }
+        return $html;
+    }
 
-        $structure = imap_fetchstructure($this->connection->getStream(), $this->message_number);
+    /**
+     * Get Message.
+     *
+     * @param int $option
+     *
+     * @return string
+     */
+    public function getPlain($option = 2)
+    {
+        if (!empty($this->plain)) {
+            return $this->plain;
+        } 
+        
+        $structure = imap_fetchstructure($this->connection->getStream(), $this->message_number); 
 
         if (isset($structure->parts) && \is_array($structure->parts) && isset($structure->parts[1])) {
-            $part = $structure->parts[1];
-            $this->message = imap_fetchbody($this->connection->getStream(), $this->message_number, $option);
-
-            $this->encoding = $part->encoding;
+            foreach($structure->parts as $i => $part) {
+                $message = imap_fetchbody($this->connection->getStream(), $this->message_number, $i + 1);
+                if($part->subtype == "PLAIN") {
+                    $this->plain = $message;
+                    $this->encoding = $part->encoding; 
+                    break;
+                } 
+            } 
 
             if (3 === $part->encoding) {
-                $this->message = imap_base64($this->message);
+                $this->plain = imap_base64($this->plain);
             } elseif (1 === $part->encoding) {
-                $this->message = imap_8bit($this->message);
+                $this->plain = imap_8bit($this->plain); 
             } else {
-                $this->message = imap_qprint($this->message);
+                $this->plain = imap_qprint($this->plain);
             }
         } else {
-            $this->message = imap_body($this->connection->getStream(), $this->message_number, $option);
+            $this->plain = imap_body($this->connection->getStream(), $this->message_number, $option);
         }
 
-        return $this->message;
+        return $this->plain;
+    }
+
+    /**
+     * Get Message.
+     *
+     * @param int $option
+     *
+     * @return string
+     */
+    public function getHtml($option = 2)
+    {
+        if (!empty($this->html)) {
+            return $this->html;
+        } 
+        
+        $structure = imap_fetchstructure($this->connection->getStream(), $this->message_number); 
+
+        if (isset($structure->parts) && \is_array($structure->parts) && isset($structure->parts[1])) {
+            foreach($structure->parts as $i => $part) {
+                $message = imap_fetchbody($this->connection->getStream(), $this->message_number, $i + 1);
+                if($part->subtype == "HTML") {
+                    $this->html = $message;
+                    $this->encoding = $part->encoding; 
+                    break;
+                } 
+            } 
+
+            if (3 === $part->encoding) {
+                $this->html = imap_base64($this->html);
+            } elseif (1 === $part->encoding) {
+                $this->html = imap_8bit($this->html); 
+            } else {
+                $this->html = imap_qprint($this->html);
+            }
+        } else {
+            $this->html = imap_body($this->connection->getStream(), $this->message_number, $option);
+        }
+
+        return $this->html;
     }
 
     /**
