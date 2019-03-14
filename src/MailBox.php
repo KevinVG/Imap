@@ -123,8 +123,7 @@ class MailBox
         $message = new Message(
             $this->connection,
             new Header($this->connection),
-            new Action($this->connection),
-            new Attachments($this->connection),
+            new Action($this->connection), 
             new Body($this->connection)
         );
 
